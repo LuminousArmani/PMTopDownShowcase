@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlatformerMovemenrt : MonoBehaviour
 {
@@ -11,10 +12,13 @@ public class PlatformerMovemenrt : MonoBehaviour
     [SerializeField]
     float jumpSpeed = 2f;
     bool grounded = false;
+    Rigidbody2D rb;
+    Animator anim;
     // Start is called before the first frame update
     void Start()
     {
-        
+        rb= GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -22,19 +26,23 @@ public class PlatformerMovemenrt : MonoBehaviour
     {
         Debug.Log(grounded); 
         float moveX = Input.GetAxis("Horizontal");
-        Vector2 velocity = GetComponent<Rigidbody2D>().velocity;
+        Vector2 velocity = rb.velocity;
         velocity.x = moveX * moveSpeed;
-        GetComponent<Rigidbody2D>().velocity = velocity;
+        rb.velocity = velocity;
         if (Input.GetButtonDown("Jump") && grounded)
         {
-            GetComponent<Rigidbody2D>().AddForce(new Vector2(0, 100 * jumpSpeed));
+            rb.AddForce(new Vector2(0, 100 * jumpSpeed));
             grounded = false;
         }
         if (Input.GetButton("Fire3"))
         {
             velocity.x = moveX * sprintSpeed;
-            GetComponent<Rigidbody2D>().velocity = velocity;
+            rb.velocity = velocity;
         }
+        anim.SetFloat("y", velocity.y);
+        anim.SetBool("grounded", grounded);
+        int x = (int)Input.GetAxisRaw("Horizontal");
+        anim.SetInteger("x", x);
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -48,6 +56,10 @@ public class PlatformerMovemenrt : MonoBehaviour
         if(collision.gameObject.layer == 6)
         {
             grounded = false;
+        }
+        else if (collision.gameObject.layer == 7)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 }
